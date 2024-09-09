@@ -1,0 +1,4 @@
+S01RVM1.I3,CYL 66BR,"CYL 66 BR
+10th CLAMP",b66,{[CLx]S01_S04HMI1.O.Sta[4].InputStatus[2].10},b67,{[CLx]S01_S04HMI1.O.Sta[4].InputStatus[2].11},{[CLx]S01LStaAct[2].ErrCode.2}
+S01RVM1.I4,CYL 88BR,"CYL 88 BR
+12th CLAMP",b86,{[CLx]S01_S04HMI1.O.Sta[4].InputStatus[2].13},b87,{[CLx]S01_S04HMI1.O.Sta[4].InputStatus[2].11},{[CLx]S01LStaAct[10].ErrCode.2}

@@ -1,0 +1,111 @@
+<group name="Group36_Cylinder_{0}" visible="true" wallpaper="false" isReferenceObject="false">
+    <panel name="Cyl_Error{0}" height="80" width="96" left="317" top="140" visible="true" isReferenceObject="false" 
+           backStyle="solid" patternStyle="none" backColor="red" patternColor="white" blink="false" description="" 
+           borderColor="red" borderStyle="raisedInset" borderWidth="5" borderUsesBackColor="true" endColor="white" 
+           gradientStop="50" gradientDirection="gradientDirectionHorizontal" gradientShadingStyle="gradientHorizontalFromRight">
+        <animations>
+            <animateVisibility expression="{8}" expressionTrueState="visible"/>
+        </animations>
+    </panel>
+    <group name="Cyl_Indicators{0}" visible="true" isReferenceObject="false">
+        <multistateIndicator name="Text_Indicator{0}" height="20" width="80" left="321" top="172" visible="true" 
+                             isReferenceObject="false" backStyle="solid" borderStyle="inset" borderUsesBackColor="true" 
+                             borderWidth="2" description="" shape="rectangle" triggerType="value" currentStateId="0" 
+                             captionOnBorder="false" setLastStateId="2">
+            <states>
+                <state stateId="Error" backColor="red" borderColor="white" patternColor="white" patternStyle="none" 
+                       blink="false" endColor="white" gradientStop="50" gradientDirection="gradientDirectionHorizontal" 
+                       gradientShadingStyle="gradientHorizontalFromRight">
+                    <caption fontFamily="Arial" fontSize="9" bold="true" italic="false" underline="false" strikethrough="false" 
+                             caption="" color="black" backColor="black" backStyle="transparent" alignment="middleCenter" 
+                             wordWrap="true" blink="false"/>
+                    <imageSettings imageName="" alignment="middleCenter" backStyle="transparent" color="white" 
+                                   backColor="navy" scaled="false" blink="false"/>
+                </state>
+                <state stateId="0" value="0" backColor="black" borderColor="white" patternColor="white" patternStyle="none" 
+                       blink="false" endColor="white" gradientStop="50" gradientDirection="gradientDirectionHorizontal" 
+                       gradientShadingStyle="gradientHorizontalFromRight">
+                    <caption fontFamily="Arial" fontSize="9" bold="true" italic="false" underline="false" 
+                             strikethrough="false" caption="{1}" color="white" backColor="#3F3F3F" backStyle="transparent" 
+                             alignment="middleCenter" wordWrap="true" blink="false"/>
+                    <imageSettings imageName="" alignment="middleCenter" backStyle="transparent" color="white" 
+                                   backColor="navy" scaled="false" blink="false"/>
+                </state>
+                <state stateId="1" value="1" backColor="black" borderColor="white" patternColor="white" patternStyle="none" 
+                       blink="false" endColor="white" gradientStop="50" gradientDirection="gradientDirectionHorizontal" 
+                       gradientShadingStyle="gradientHorizontalFromRight">
+                    <caption fontFamily="Arial" fontSize="9" bold="true" italic="false" underline="false" 
+                             strikethrough="false" caption="{2}" color="white" backColor="navy" backStyle="transparent" 
+                             alignment="middleCenter" wordWrap="true" blink="false"/>
+                    <imageSettings imageName="" alignment="middleCenter" backStyle="transparent" color="white" 
+                                   backColor="navy" scaled="false" blink="false"/>
+                </state>
+            </states>
+            <connections>
+                <connection name="Indicator" expression="{4}"/>
+            </connections>
+        </multistateIndicator>
+        <text name="Cyl_Text_Id{0}" height="28" width="61" left="321" top="144" visible="true" isReferenceObject="false" 
+              backStyle="solid" backColor="blue" foreColor="white" wordWrap="false" sizeToFit="true" alignment="middleLeft" 
+              fontFamily="Arial" charHeight="14" charWidth="6" bold="false" italic="false" underline="false" 
+              strikethrough="false" caption="{3}"/>
+        <multistateIndicator name="Home_Indicator{0}" height="20" width="30" left="351" top="193" visible="true" 
+                             isReferenceObject="false" backStyle="solid" borderStyle="inset" borderUsesBackColor="true" 
+                             borderWidth="2" description="" shape="rectangle" triggerType="value" currentStateId="1" 
+                             captionOnBorder="false" setLastStateId="2">
+            <states>
+                <state stateId="0" value="0" backColor="black" borderColor="white" patternColor="white" patternStyle="none" 
+                       blink="false" endColor="white" gradientStop="50" gradientDirection="gradientDirectionHorizontal" 
+                       gradientShadingStyle="gradientHorizontalFromRight">
+                    <caption fontFamily="Arial" fontSize="9" bold="true" italic="false" underline="false" 
+                             strikethrough="false" caption="{6}" color="white" backColor="#3F3F3F" backStyle="transparent" 
+                             alignment="middleCenter" wordWrap="true" blink="false"/>
+                </state>
+                <state stateId="1" value="1" backColor="yellow" borderColor="white" patternColor="white" 
+                       patternStyle="none" blink="false" endColor="white" gradientStop="50" 
+                       gradientDirection="gradientDirectionHorizontal" gradientShadingStyle="gradientHorizontalFromRight">
+                    <caption fontFamily="Arial" fontSize="9" bold="true" italic="false" underline="false" 
+                             strikethrough="false" caption="{6}" color="black" backColor="navy" backStyle="transparent" 
+                             alignment="middleCenter" wordWrap="true" blink="false"/>
+                </state>
+            </states>
+            <connections>
+                <connection name="Indicator" expression="{7}"/>
+            </connections>
+        </multistateIndicator>
+        <multistateIndicator name="Work_Indicator{0}" height="20" width="30" left="321" top="193" visible="true" 
+                             isReferenceObject="false" backStyle="solid" borderStyle="inset" borderUsesBackColor="true" 
+                             borderWidth="2" description="" shape="rectangle" triggerType="value" currentStateId="1" 
+                             captionOnBorder="false" setLastStateId="2">
+            <states>
+                <state stateId="Error" backColor="red" borderColor="white" patternColor="white" patternStyle="none" 
+                       blink="false" endColor="white" gradientStop="50" gradientDirection="gradientDirectionHorizontal" 
+                       gradientShadingStyle="gradientHorizontalFromRight">
+                    <caption fontFamily="Arial" fontSize="9" bold="true" italic="false" underline="false" strikethrough="false" 
+                             caption="" color="black" backColor="black" backStyle="transparent" alignment="middleCenter" 
+                             wordWrap="true" blink="false"/>
+                    <imageSettings imageName="" alignment="middleCenter" backStyle="transparent" color="white" 
+                                   backColor="navy" scaled="false" blink="false"/>
+                </state>
+                <state stateId="0" value="0" backColor="black" borderColor="white" patternColor="white" patternStyle="none" 
+                       blink="false" endColor="white" gradientStop="50" gradientDirection="gradientDirectionHorizontal" 
+                       gradientShadingStyle="gradientHorizontalFromRight">
+                    <caption fontFamily="Arial" fontSize="9" bold="true" italic="false" underline="false" 
+                             strikethrough="false" caption="{4}" color="white" backColor="#3F3F3F" backStyle="transparent" 
+                             alignment="middleCenter" wordWrap="true" blink="false"/>
+                    <imageSettings imageName="" alignment="middleCenter" backStyle="transparent" color="white" 
+                                   backColor="navy" scaled="false" blink="false"/>
+                </state>
+                <state stateId="1" value="1" backColor="lime" borderColor="white" patternColor="white" patternStyle="none" 
+                       blink="false" endColor="white" gradientStop="50" gradientDirection="gradientDirectionHorizontal">
+                    <caption fontFamily="Arial" fontSize="9" bold="true" italic="false" underline="false" strikethrough="false" 
+                             caption="{4}" color="black" backColor="navy" backStyle="transparent" alignment="middleCenter" 
+                             wordWrap="true" blink="false"/>
+                </state>
+            </states>
+            <connections>
+                <connection name="Indicator" expression="{5}"/>
+            </connections>
+        </multistateIndicator>
+    </group>
+</group>
