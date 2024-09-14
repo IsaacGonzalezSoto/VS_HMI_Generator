@@ -1,12 +1,12 @@
-
-import csv
-from typing import List
+from typing import List, Dict
+import openpyxl
 from lxml import etree
+
 
 class XMLModifier:
     """
-    A class to handle modifications to an XML file. It focuses on adding groups based on dynamic
-    generation and removing existing groups before inserting new ones.
+    A class to handle modifications to an XML file. It specifically focuses on adding groups
+    based on a template and removing existing groups before inserting new ones.
     """
 
     def __init__(self, template_file: str):
@@ -15,11 +15,8 @@ class XMLModifier:
 
         :param template_file: Path to the XML template file.
         """
-        # Load the XML file and get the root element
         self.tree = etree.parse(template_file)
         self.root = self.tree.getroot()
-        
-        # Clean existing groups from the template before adding new ones
         self.clean_existing_groups()
 
     def clean_existing_groups(self) -> None:
@@ -31,154 +28,150 @@ class XMLModifier:
             self.root.remove(group)
         print("Cleaned all existing <group> elements from the template.")
 
-    def create_cylinder_group(self, data: List[str], idx: int) -> etree.Element:
+    def create_cylinder_group(self, data: Dict[str, str], idx: int) -> etree.Element:
         """
-        Creates a new cylinder group XML node based on the provided data.
+        Creates a new cylinder group XML node based on the data provided.
 
-        :param data: List of data values from a CSV row.
+        :param data: A dictionary with the Excel data (one row) where keys are column headers.
         :param idx: Index of the current group (used for unique identification).
         :return: A new XML Element representing the cylinder group.
         """
+        # Print the keys for debugging (optional)
+        print(f"Keys in data: {data.keys()}")
+
+        # Ensure the data dictionary has the required keys from the Excel file
+        data = {key: data.get(key, '') for key in [
+            'Caption for Text Indicator (State 0)', 'Caption for Text Indicator (State 1)', 'Cylinder Label Text', 
+            'Home Indicator State', 'Home Indicator Connection Expression', 
+            'Work Indicator State', 'Work Indicator Connection Expression', 'Panel Visibility'
+        ]}
+
         # Create the main group element for the cylinder
         group = etree.Element("group", name=f"Group36_Cylinder_{idx}", visible="true", wallpaper="false", isReferenceObject="false")
 
-        # Create the panel element
-        panel = etree.SubElement(group, "panel", name=f"Cyl_Error{idx}", height="80", width="96", left="317", top="140",
-                                 visible="true", isReferenceObject="false", backStyle="solid", patternStyle="none", 
-                                 backColor="red", patternColor="white", blink="false", description="", borderColor="red", 
-                                 borderStyle="raisedInset", borderWidth="5", borderUsesBackColor="true", endColor="white", 
-                                 gradientStop="50", gradientDirection="gradientDirectionHorizontal", 
-                                 gradientShadingStyle="gradientHorizontalFromRight")
+        # Add the Cyl_Error panel
+        panel = etree.SubElement(group, "panel", name=f"Cyl_Error{idx}", height="80", width="96", left="317", top="140", visible="true", 
+                                isReferenceObject="false", backStyle="solid", patternStyle="none", backColor="red", patternColor="white", 
+                                blink="false", description="", borderColor="red", borderStyle="raisedInset", borderWidth="5", 
+                                borderUsesBackColor="true", endColor="white", gradientStop="50", gradientDirection="gradientDirectionHorizontal", 
+                                gradientShadingStyle="gradientHorizontalFromRight")
 
-        # Add animations to the panel
+        # Add animations for error visibility
+        error_expression = data.get('Panel Visibility', '')  
         animations = etree.SubElement(panel, "animations")
-        etree.SubElement(animations, "animateVisibility", expression=data[4], expressionTrueState="visible")
+        etree.SubElement(animations, "animateVisibility", expression=error_expression, expressionTrueState="visible")
 
-        # Create a sub-group for indicators
+        # Create the indicators group inside the main group
         indicators_group = etree.SubElement(group, "group", name=f"Cyl_Indicators{idx}", visible="true", isReferenceObject="false")
+        
+        ### Add the <text> element for Cylinder Label Text
+        cyl_text_caption = data.get('Cylinder Label Text', 'CYL Text')  # Default caption if empty
+        text_element = etree.SubElement(indicators_group, "text", name=f"Cyl_Text_Id{idx}", height="28", width="61", left="321", top="144",
+                                    visible="true", isReferenceObject="false", backStyle="solid", backColor="blue", foreColor="white", 
+                                    wordWrap="false", sizeToFit="true", alignment="middleLeft", fontFamily="Arial", charHeight="14", 
+                                    charWidth="6", bold="false", italic="false", underline="false", strikethrough="false", 
+                                    caption=cyl_text_caption)
+        # Add the Text Indicator multistate element
+        text_indicator = etree.SubElement(indicators_group, "multistateIndicator", name=f"Text_Indicator{idx}", height="20", width="80", 
+                                        left="321", top="172", visible="true", isReferenceObject="false", backStyle="solid", 
+                                        borderStyle="inset", borderUsesBackColor="true", borderWidth="2", description="", shape="rectangle", 
+                                        triggerType="value", currentStateId="0", captionOnBorder="false", setLastStateId="2")
 
-        # Create the Text Indicator multistate element
-        text_indicator = etree.SubElement(indicators_group, "multistateIndicator", name=f"Text_Indicator{idx}",
-                                          height="20", width="80", left="321", top="172", visible="true", isReferenceObject="false",
-                                          backStyle="solid", borderStyle="inset", borderUsesBackColor="true", borderWidth="2", 
-                                          description="", shape="rectangle", triggerType="value", currentStateId="0", captionOnBorder="false",
-                                          setLastStateId="2")
-
-        # Add states to the Text Indicator
+        # Add states to the text indicator
         states = etree.SubElement(text_indicator, "states")
-        state_error = etree.SubElement(states, "state", stateId="Error", backColor="red", borderColor="white", patternColor="white",
-                                       patternStyle="none", blink="false", endColor="white", gradientStop="50", 
-                                       gradientDirection="gradientDirectionHorizontal", gradientShadingStyle="gradientHorizontalFromRight")
-        etree.SubElement(state_error, "caption", fontFamily="Arial", fontSize="9", bold="true", italic="false", underline="false",
-                         strikethrough="false", caption="", color="black", backColor="black", backStyle="transparent", 
-                         alignment="middleCenter", wordWrap="true", blink="false")
 
-        state_0 = etree.SubElement(states, "state", stateId="0", value="0", backColor="black", borderColor="white", 
-                                   patternColor="white", patternStyle="none", blink="false", endColor="white", 
-                                   gradientStop="50", gradientDirection="gradientDirectionHorizontal", gradientShadingStyle="gradientHorizontalFromRight")
-        etree.SubElement(state_0, "caption", fontFamily="Arial", fontSize="9", bold="true", italic="false", underline="false",
-                         strikethrough="false", caption=data[0], color="white", backColor="#3F3F3F", backStyle="transparent", 
-                         alignment="middleCenter", wordWrap="true", blink="false")
+        # State 0 (normal state) - from "Caption for Text Indicator (State 0)"
+        state_0 = etree.SubElement(states, "state", stateId="0", value="0", backColor="black", borderColor="white", patternColor="white", 
+                                patternStyle="none", blink="false", endColor="white", gradientStop="50", 
+                                gradientDirection="gradientDirectionHorizontal", gradientShadingStyle="gradientHorizontalFromRight")
+        etree.SubElement(state_0, "caption", fontFamily="Arial", fontSize="9", bold="true", italic="false", underline="false", 
+                        strikethrough="false", caption=data.get('Caption for Text Indicator (State 0)', ''), color="white", backColor="#3F3F3F", 
+                        backStyle="transparent", alignment="middleCenter", wordWrap="true", blink="false")
 
+        # State 1 - from "Caption for Text Indicator (State 1)"
         state_1 = etree.SubElement(states, "state", stateId="1", value="1", backColor="black", borderColor="white", patternColor="white", 
-                                   patternStyle="none", blink="false", endColor="white", gradientStop="50", 
-                                   gradientDirection="gradientDirectionHorizontal", gradientShadingStyle="gradientHorizontalFromRight")
+                                patternStyle="none", blink="false", endColor="white", gradientStop="50", 
+                                gradientDirection="gradientDirectionHorizontal", gradientShadingStyle="gradientHorizontalFromRight")
         etree.SubElement(state_1, "caption", fontFamily="Arial", fontSize="9", bold="true", italic="false", underline="false", 
-                         strikethrough="false", caption=data[1], color="white", backColor="navy", backStyle="transparent", 
-                         alignment="middleCenter", wordWrap="true", blink="false")
+                        strikethrough="false", caption=data.get('Caption for Text Indicator (State 1)', ''), color="white", backColor="navy", 
+                        backStyle="transparent", alignment="middleCenter", wordWrap="true", blink="false")
 
-        # Add the connection element
-        connections = etree.SubElement(text_indicator, "connections")
-        etree.SubElement(connections, "connection", name="Indicator", expression=data[4])
 
-        # Create a Text element
-        etree.SubElement(indicators_group, "text", name=f"Cyl_Text_Id{idx}", height="28", width="61", left="321", top="144", visible="true", 
-                         isReferenceObject="false", backStyle="solid", backColor="blue", foreColor="white", wordWrap="false", 
-                         sizeToFit="true", alignment="middleLeft", fontFamily="Arial", charHeight="14", charWidth="6", bold="false", 
-                         italic="false", underline="false", strikethrough="false", caption=data[2])
+        # Assign correct Home and Work indicator values
+        home_caption = data.get('Home Indicator State', '')  # Correct Home data
+        home_expression = data.get('Home Indicator Connection Expression', '')  # Correct Home expression
+        work_caption = data.get('Work Indicator State', '')  # Correct Work data
+        work_expression = data.get('Work Indicator Connection Expression', '')  # Correct Work expression
 
-        # Add the Home Indicator multistate element
-        home_indicator = etree.SubElement(indicators_group, "multistateIndicator", name=f"Home_Indicator{idx}",
-                                        height="20", width="30", left="351", top="193", visible="true", 
-                                        isReferenceObject="false", backStyle="solid", borderStyle="inset", 
-                                        borderUsesBackColor="true", borderWidth="2", description="", 
-                                        shape="rectangle", triggerType="value", currentStateId="1", 
-                                        captionOnBorder="false", setLastStateId="2")
+        # Home Indicator (on the left, green when active)
+        home_indicator = etree.SubElement(indicators_group, "multistateIndicator", name=f"Home_Indicator{idx}", height="20", width="30", 
+                                        left="321", top="193", visible="true", isReferenceObject="false", backStyle="solid", 
+                                        borderStyle="inset", borderUsesBackColor="true", borderWidth="2", description="", shape="rectangle", 
+                                        triggerType="value", currentStateId="1", captionOnBorder="false", setLastStateId="2")
 
-        # Adding states for Home_Indicator
         home_states = etree.SubElement(home_indicator, "states")
 
-        # State 0 with caption from column 4 (data[3])
-        state_0_home = etree.SubElement(home_states, "state", stateId="0", value="0", backColor="black", 
-                                        borderColor="white", patternColor="white", patternStyle="none", 
-                                        blink="false", endColor="white", gradientStop="50", 
-                                        gradientDirection="gradientDirectionHorizontal", 
+        # State 0 for Home Indicator (off - black)
+        state_0_home = etree.SubElement(home_states, "state", stateId="0", value="0", backColor="black", borderColor="white", 
+                                        patternColor="white", patternStyle="none", blink="false", endColor="white", 
+                                        gradientStop="50", gradientDirection="gradientDirectionHorizontal", 
                                         gradientShadingStyle="gradientHorizontalFromRight")
+        etree.SubElement(state_0_home, "caption", fontFamily="Arial", fontSize="9", bold="true", italic="false", 
+                        underline="false", strikethrough="false", caption=home_caption, color="white", 
+                        backColor="#3F3F3F", backStyle="transparent", alignment="middleCenter", wordWrap="true", blink="false")
 
-        etree.SubElement(state_0_home, "caption", fontFamily="Arial", fontSize="9", bold="true", 
-                        italic="false", underline="false", strikethrough="false", caption=data[3], 
-                        color="white", backColor="#3F3F3F", backStyle="transparent", 
-                        alignment="middleCenter", wordWrap="true", blink="false")
-
-        # State 1 with the same caption from column 4 (data[3])
-        state_1_home = etree.SubElement(home_states, "state", stateId="1", value="1", backColor="yellow", 
-                                        borderColor="white", patternColor="white", patternStyle="none", 
-                                        blink="false", endColor="white", gradientStop="50", 
-                                        gradientDirection="gradientDirectionHorizontal", 
+        # State 1 for Home Indicator (on - green)
+        state_1_home = etree.SubElement(home_states, "state", stateId="1", value="1", backColor="lime", borderColor="white", 
+                                        patternColor="white", patternStyle="none", blink="false", endColor="white", 
+                                        gradientStop="50", gradientDirection="gradientDirectionHorizontal", 
                                         gradientShadingStyle="gradientHorizontalFromRight")
+        etree.SubElement(state_1_home, "caption", fontFamily="Arial", fontSize="9", bold="true", italic="false", 
+                        underline="false", strikethrough="false", caption=home_caption, color="black", 
+                        backColor="navy", backStyle="transparent", alignment="middleCenter", wordWrap="true", blink="false")
 
-        etree.SubElement(state_1_home, "caption", fontFamily="Arial", fontSize="9", bold="true", 
-                        italic="false", underline="false", strikethrough="false", caption=data[3], 
-                        color="black", backColor="navy", backStyle="transparent", 
-                        alignment="middleCenter", wordWrap="true", blink="false")
-
-        # Adding the connection from column 5 (data[4])
+        # Add Home indicator connections
         home_connections = etree.SubElement(home_indicator, "connections")
-        etree.SubElement(home_connections, "connection", name="Indicator", expression=data[4])
+        etree.SubElement(home_connections, "connection", name="Indicator", expression=home_expression)
 
+        # Work Indicator (on the right, yellow when active)
+        work_indicator = etree.SubElement(indicators_group, "multistateIndicator", name=f"Work_Indicator{idx}", height="20", width="30", 
+                                        left="351", top="193", visible="true", isReferenceObject="false", backStyle="solid", 
+                                        borderStyle="inset", borderUsesBackColor="true", borderWidth="2", description="", 
+                                        shape="rectangle", triggerType="value", currentStateId="1", captionOnBorder="false", 
+                                        setLastStateId="2")
 
-        # Add the Work Indicator multistate element
-        work_indicator = etree.SubElement(indicators_group, "multistateIndicator", name=f"Work_Indicator{idx}",
-                                        height="20", width="30", left="321", top="193", visible="true", 
-                                        isReferenceObject="false", backStyle="solid", borderStyle="inset", 
-                                        borderUsesBackColor="true", borderWidth="2", description="", 
-                                        shape="rectangle", triggerType="value", currentStateId="1", 
-                                        captionOnBorder="false", setLastStateId="2")
-
-        # Adding states for Work_Indicator
         work_states = etree.SubElement(work_indicator, "states")
 
-        # State 0 with caption from column 6 (data[5])
-        state_0_work = etree.SubElement(work_states, "state", stateId="0", value="0", backColor="black", 
-                                        borderColor="white", patternColor="white", patternStyle="none", 
-                                        blink="false", endColor="white", gradientStop="50", 
-                                        gradientDirection="gradientDirectionHorizontal", 
+        # State 0 for Work Indicator (off - black)
+        state_0_work = etree.SubElement(work_states, "state", stateId="0", value="0", backColor="black", borderColor="white", 
+                                        patternColor="white", patternStyle="none", blink="false", endColor="white", 
+                                        gradientStop="50", gradientDirection="gradientDirectionHorizontal", 
                                         gradientShadingStyle="gradientHorizontalFromRight")
+        etree.SubElement(state_0_work, "caption", fontFamily="Arial", fontSize="9", bold="true", italic="false", 
+                        underline="false", strikethrough="false", caption=work_caption, color="white", 
+                        backColor="#3F3F3F", backStyle="transparent", alignment="middleCenter", wordWrap="true", blink="false")
 
-        etree.SubElement(state_0_work, "caption", fontFamily="Arial", fontSize="9", bold="true", 
-                        italic="false", underline="false", strikethrough="false", caption=data[5], 
-                        color="white", backColor="#3F3F3F", backStyle="transparent", 
-                        alignment="middleCenter", wordWrap="true", blink="false")
-
-        # State 1 with the same caption from column 6 (data[5])
-        state_1_work = etree.SubElement(work_states, "state", stateId="1", value="1", backColor="lime", 
-                                        borderColor="white", patternColor="white", patternStyle="none", 
-                                        blink="false", endColor="white", gradientStop="50", 
-                                        gradientDirection="gradientDirectionHorizontal", 
+        # State 1 for Work Indicator (on - yellow)
+        state_1_work = etree.SubElement(work_states, "state", stateId="1", value="1", backColor="yellow", borderColor="white", 
+                                        patternColor="white", patternStyle="none", blink="false", endColor="white", 
+                                        gradientStop="50", gradientDirection="gradientDirectionHorizontal", 
                                         gradientShadingStyle="gradientHorizontalFromRight")
+        etree.SubElement(state_1_work, "caption", fontFamily="Arial", fontSize="9", bold="true", italic="false", 
+                        underline="false", strikethrough="false", caption=work_caption, color="black", 
+                        backColor="navy", backStyle="transparent", alignment="middleCenter", wordWrap="true", blink="false")
 
-        etree.SubElement(state_1_work, "caption", fontFamily="Arial", fontSize="9", bold="true", 
-                        italic="false", underline="false", strikethrough="false", caption=data[5], 
-                        color="black", backColor="navy", backStyle="transparent", 
-                        alignment="middleCenter", wordWrap="true", blink="false")
-
-        # Adding the connection from column 7 (data[6])
+        # Add Work indicator connections
         work_connections = etree.SubElement(work_indicator, "connections")
-        etree.SubElement(work_connections, "connection", name="Indicator", expression=data[6])
+        etree.SubElement(work_connections, "connection", name="Indicator", expression=work_expression)
 
-
-        # Return the constructed group element
         return group
+
+
+
+
+
+
+
 
     def append_group(self, group_node: etree.Element) -> None:
         """
@@ -191,84 +184,56 @@ class XMLModifier:
 
     def save(self, output_file: str) -> None:
         """
-        Saves the modified XML document to a specified file with pretty printing enabled.
+        Saves the modified XML document to a specified file.
 
         :param output_file: Path to the output file where the updated XML will be saved.
         """
-        with open(output_file, 'wb') as f:
-            # Convert the XML tree to a string with pretty_print enabled
-            xml_string = etree.tostring(self.root, pretty_print=True, xml_declaration=True, encoding="UTF-8")
-            f.write(xml_string)
-        print(f"Saved updated XML with pretty printing to {output_file}")
+        self.tree.write(output_file, pretty_print=True, xml_declaration=True, encoding="UTF-8")
+        print(f"Saved updated XML to {output_file}")
 
 
-class CSVReader:
+class ExcelReader:
     """
-    A class to handle reading of CSV files.
+    A class to handle reading of Excel files.
     """
 
     @staticmethod
-    def read_csv(file_path: str) -> List[List[str]]:
+    def read_excel(file_path: str) -> List[Dict[str, str]]:
         """
-        Reads a CSV file and returns its content as a list of rows, with each row represented as a list of strings.
+        Reads an Excel file and returns its content as a list of dictionaries.
 
-        :param file_path: Path to the CSV file.
-        :return: A list of rows, where each row is a list of strings from the CSV file.
+        :param file_path: Path to the Excel file.
+        :return: A list of dictionaries, each representing a row in the Excel file.
         """
+        workbook = openpyxl.load_workbook(file_path)
+        sheet = workbook.active
         data = []
-        with open(file_path, mode='r') as file:
-            csv_reader = csv.reader(file)
-            for row in csv_reader:
-                data.append(row)
-        print(f"Read {len(data)} rows from the CSV file.")
+        headers = [cell.value for cell in sheet[1]]  # Read header row
+        for row in sheet.iter_rows(min_row=2, values_only=True):
+            row_data = {headers[i]: row[i] for i in range(len(headers))}
+            data.append(row_data)
+        print(f"Read {len(data)} rows from the Excel file.")
         return data
-
-
-class CylinderGroupProcessor:
-    """
-    A class to process cylinder groups using the CSV data and XML modification functionalities.
-    """
-
-    def __init__(self, xml_modifier: XMLModifier, csv_reader: CSVReader, csv_file: str):
-        """
-        Initializes the CylinderGroupProcessor with instances of XMLModifier, CSVReader, and the path to the CSV file.
-
-        :param xml_modifier: An instance of the XMLModifier class for handling XML modifications.
-        :param csv_reader: An instance of the CSVReader class for reading CSV data.
-        :param csv_file: Path to the CSV file containing cylinder group data.
-        """
-        self.xml_modifier = xml_modifier
-        self.csv_reader = csv_reader
-        self.csv_file = csv_file
-
-    def process_groups(self) -> None:
-        """
-        Processes each row of the CSV file, creating and appending new groups to the XML document.
-        """
-        # Read CSV data
-        caption_rows = self.csv_reader.read_csv(self.csv_file)
-
-        # Loop through each CSV row and create/append the corresponding group
-        for idx, row in enumerate(caption_rows, start=1):
-            print(f"Processing cylinder group {idx}")
-            print(f"Data for group {idx}: {row}")
-            new_group = self.xml_modifier.create_cylinder_group(row, idx)
-            self.xml_modifier.append_group(new_group)
 
 
 if __name__ == "__main__":
     # Paths to files
     xml_file = 'IO_Status_Cylinder_Template.xml'  # XML template file name
-    csv_file = 'captions.csv'  # CSV file name containing data
+    excel_file = 'captions.xlsx'  # Excel file name containing data
     output_file = 'updated_hmi_file.xml'  # Output file to save the modified XML
 
     # Create instances of necessary classes
     xml_modifier = XMLModifier(xml_file)
-    csv_reader = CSVReader()
+    excel_reader = ExcelReader()
 
-    # Create the processor and process cylinder groups
-    group_processor = CylinderGroupProcessor(xml_modifier, csv_reader, csv_file)
-    group_processor.process_groups()
+    # Read data from Excel
+    caption_rows = excel_reader.read_excel(excel_file)
+
+    # Loop through each Excel row and create/append the corresponding group
+    for idx, row in enumerate(caption_rows, start=1):
+        print(f"Processing cylinder group {idx}")
+        new_group = xml_modifier.create_cylinder_group(row, idx)
+        xml_modifier.append_group(new_group)
 
     # Save the final XML to a file
     xml_modifier.save(output_file)
