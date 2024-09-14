@@ -20,6 +20,8 @@ This project automates the generation of HMI (Human-Machine Interface) status in
 
 
 
+
+
 ## Prerequisites
 
 - Python 3.6 or higher
