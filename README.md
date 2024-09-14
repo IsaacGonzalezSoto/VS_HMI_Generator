@@ -1,6 +1,7 @@
 # HMI Cylinder Status Generator
 
 This project automates the generation of HMI (Human-Machine Interface) status indicators for cylinders. It reads configuration data from an Excel file and generates an XML structure that includes error panels and multistate indicators for home and work statuses.
+![image](https://github.com/user-attachments/assets/1c642fb3-110f-471c-8ac7-e3418960c2aa)
 
 ## Features
 
